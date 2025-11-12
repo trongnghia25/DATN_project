@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhận dạng biển số</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #videoFeed {
+            border: 2px solid #000;
+            border-radius: 10px;
+            width: 80%;
+            margin-top: 20px;
+        }
+        button {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Nhận dạng biển số</h1>
+    <img id="videoFeed" src="/video_feed" alt="Video stream không khả dụng">
+    <div>
+        <button id="start">Bắt đầu</button>
+        <button id="stop">Dừng</button>
+    </div>
+    <p>Kết quả: <span id="result">Chưa có</span></p>
+
+    <script>
+        const resultSpan = document.getElementById('result');
+
+        document.getElementById('start').addEventListener('click', () => {
+            fetch('/detect', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.status))
+                .catch(err => alert("Lỗi: " + err.message));
+        });
+
+        document.getElementById('stop').addEventListener('click', () => {
+            fetch('/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    resultSpan.textContent = data.recognized_text;
+                })
+                .catch(err => alert("Lỗi: " + err.message));
+        });
+    </script>
+</body>
+</html>

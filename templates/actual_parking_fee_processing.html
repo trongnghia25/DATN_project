@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Dịch vụ gửi xe</h1>
+<!-- Danh sách Price Convention (phân trang) -->
+<form method="POST" action="/actual_parking_fee">
+    <div class="mb-3 row">
+        <label for="vehicleTypeID" class="col-sm-6 col-form-label">Loại phương tiện</label>
+        <label for="PlateNumber" class="col-sm-6 col-form-label">Biển số</label>
+        <div class="col-sm-6">
+            <select class="form-control" id="vehicleTypeID" name="VehicleTypeID" required>
+                <option value="" disabled selected>Chọn loại phương tiện</option>
+                {% for vehicle_type in vehicle_types %}
+                <option value="{{ vehicle_type[0] }}">{{ vehicle_type[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-6">
+            <div class="input-group">
+                <input type="text" class="form-control" id="PlateNumber" name="PlateNumber" required>
+                <button type="button" id="detectPlateBtn" class="btn btn-secondary">Nhận diện</button>
+            </div>
+            <div class="mt-3">
+                <h5>Luồng webcam</h5>
+                <img id="webcamStream" src="/video_feed" alt="Webcam Stream" style="width: 100%; border: 1px solid #ddd;">
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="Note" class="col-sm-12 col-form-label">Ghi chú</label>
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="Note" name="Note">
+            </div>
+        </div>
+    </div>
+    <button type="submit" id="submitParking" class="btn  btn-primary">Gửi xe</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Loại phương tiện số</th>
+            <th>Tên phương tiện</th>
+            <th>Biển số</th>
+            <th>Thời gian đi vào</th>
+            <th>Thời gian đi ra</th>
+            <th>Trạng thái để xe</th>
+            <th>Tổng số tiền</th>
+            <th>Ghi chú</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in actual_parking_fee %}
+        <tr>
+            <td>{{ item.VehicleTypeID }}</td>
+            <td>{{ item.VehicleTypeName }}</td>
+            <td>{{ item.PlateNumber }}</td>
+            <td>{{ item.EntryTime }}</td>
+            <td>{{ item.ExitTime }}</td>
+            <td>
+                <span class="{% if 'Đang gửi xe' in item.Status %}status-red{% elif 'Đã trả xe' in item.Status %}status-green{% endif %}">
+                    {{ item.Status }}
+                </span>
+            </td>
+            <td>{{ item.TotalFee }}</td>
+            <td>{{ item.Note }}</td>
+            <td>
+                <!-- Delete Button -->
+                <form method="POST" action="/actual_parking_fee/delete/{{ item.ID }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger delete-btn">Xóa</button>
+                </form>
+                <!-- Edit Button -->
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Phân trang -->
+<nav>
+    <ul class="pagination">
+        {% for page in range(1, total_pages + 1) %}
+        <li class="page-item {% if page == current_page %}active{% endif %}">
+            <a class="page-link" href="/actual_parking_fee_processing?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy tất cả các nút xóa
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                // Ngăn chặn hành động mặc định
+                event.preventDefault();
+
+                // Hiển thị hộp thoại xác nhận
+                const confirmDelete = confirm('Bạn có chắc chắn muốn xóa không?');
+
+                if (confirmDelete) {
+                    // Nếu người dùng chọn "Có", submit form
+                    this.closest('form').submit();
+                }
+                // Nếu chọn "Không", không làm gì thêm
+            });
+        });
+    });
+
+
+    document.getElementById('detectPlateBtn').addEventListener('click', function () {
+        // Hiển thị loading (nếu cần)
+        this.innerText = "Đang nhận diện...";
+        this.disabled = true;
+
+        // Gửi yêu cầu đến API nhận diện biển số
+        fetch('/detect_plate', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.plate_number) {
+                    // Điền kết quả vào ô input
+                    document.getElementById('PlateNumber').value = data.plate_number;
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi nhận diện:', error);
+                alert("Lỗi hệ thống. Vui lòng thử lại.");
+            })
+            .finally(() => {
+                this.innerText = "Nhận diện";
+                this.disabled = false;
+            });
+    });
+
+
+    document.getElementById('submitParking').addEventListener('click', function (event) {
+    const plateNumber = document.getElementById('PlateNumber').value;
+    const vehicleTypeID = document.getElementById('vehicleTypeID').value;
+
+    if (!plateNumber || !vehicleTypeID) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+    }
+
+    // Gửi yêu cầu kiểm tra trạng thái xe
+    fetch(`/check_parking_status?plateNumber=${plateNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'Đang gửi xe') {
+                const confirmMessage = `Chiếc xe này đang gửi. Bạn muốn trả xe? Giá: ${data.price}`;
+                const userConfirmed = confirm(confirmMessage);
+                if (userConfirmed) {
+                    document.getElementById('parkingForm').submit();
+                }
+            } else {
+                document.getElementById('parkingForm').submit();
+            }
+        })
+        .catch(error => {
+            console.error("Lỗi khi kiểm tra trạng thái:", error);
+        });
+});
+
+
+
+</script>
+
+{% endblock %}

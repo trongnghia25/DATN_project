@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container home">
+    <h1 class="text-center">Nhận dạng biển số</h1>
+    <p class="text-muted text-center">Chào mừng bạn đến với hệ thống nhận dạng biển số xe tự động.</p>
+
+    <div class="row justify-content-center" >
+        <div class="col-md-8" >
+            <div class="alert alert-info text-center" role="alert" style="border: 1px solid black!important">
+                Hệ thống của chúng tôi giúp bạn nhận dạng biển số xe một cách nhanh chóng và chính xác, hỗ trợ quản lý phương tiện hiệu quả hơn.
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body" style="border: 1px solid black!important">
+                    <h5 class="card-title">Hệ thống bao gồm</h5>
+                    <p class="card-text">
+                        <ul>
+                            <li>Quản lý các loại phương tiện: Xe máy, xe đạp điện, ô tô.</li>
+                            <li>Quản lý giá vé theo khung giờ:
+                                <ul>
+                                    <li>Sáng: Từ 6:00 đến 18:00</li>
+                                    <li>Tối: Từ 18:00 đến 00:00</li>
+                                    <li>Đêm: Từ 00:00 đến 6:00</li>
+                                </ul>
+                            </li>
+                            <li>Nhận dạng biển số xe tích hợp mô hình YOLO tiên tiến, đảm bảo độ chính xác và tốc độ xử lý cao.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6 text-center">
+            <a href="/actual_parking_fee_processing" class="btn btn-success btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Bắt đầu gửi xe tại đây
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

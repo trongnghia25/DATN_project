@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Bảng giá tiền vé xe</h1>
+
+<!-- Thêm mới Price Convention -->
+<form method="POST" action="/price_convention">
+    <div class="mb-3 row">
+        <label for="vehicleTypeID" class="col-sm-6 col-form-label">Loại phương tiện số</label>
+        <label for="time" class="col-sm-6 col-form-label">Thời điểm</label>
+        <div class="col-sm-6">
+            <select class="form-control" id="vehicleTypeID" name="VehicleTypeID" required>
+                <option value="" disabled selected>Chọn loại phương tiện</option>
+                {% for vehicle_type in vehicle_types %}
+                <option value="{{ vehicle_type[0] }}">{{ vehicle_type[1] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm-6">
+            <input type="text" class="form-control" id="time" name="Time" required>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label for="price" class="col-sm-6 col-form-label">Giá </label>
+        <label for="ticketType" class="col-sm-6 col-form-label">Loại vé</label>
+        <div class="col-sm-6">
+            <input type="number" class="form-control" id="price" name="Price" required>
+        </div>
+        <div class="col-sm-6">
+            <input type="text" class="form-control" id="ticketType" name="TicketType" required>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label for="startTime" class="col-sm-6 col-form-label">Thời gian bắt đầu</label>
+        <label for="endTime" class="col-sm-6 col-form-label">Thời gian kết thúc</label>
+        <div class="col-sm-6">
+            <input type="text" class="form-control" id="startTime" name="StartTime" required>
+        </div>
+        <div class="col-sm-6">
+            <input type="text" class="form-control" id="endTime" name="EndTime" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Tạo mới</button>
+</form>
+
+
+<hr>
+
+<!-- Danh sách Price Convention (phân trang) -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Loại phương tiện</th>
+            <th>Tên phương tiện</th>
+            <th>Thời điểm</th>
+            <th>Giá vé</th>
+            <th>Loại vé</th>
+            <th>Thời gian bắt đầu</th>
+            <th>Thời gian kết thúc</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in price_conventions %}
+        <tr>
+            <td>{{ item.VehicleTypeID }}</td>
+            <td>{{ item.VehicleTypeName }}</td>
+            <td>{{ item.Time }}</td>
+            <td>{{ item.Price }}</td>
+            <td>{{ item.TicketType }}</td>
+            <td>{{ item.StartTime }}</td>
+            <td>{{ item.EndTime }}</td>
+            <td>
+                <!-- Delete Button -->
+                <form method="POST" action="/price_convention/delete/{{ item.ID }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger delete-btn">Xóa</button>
+                </form>
+                <!-- Edit Button -->
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal{{ item.ID }}">
+                    Điều chỉnh
+                </button>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editModal{{ item.ID }}" tabindex="-1" aria-labelledby="editModalLabel{{ item.ID }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ item.ID }}">Thông tin giá vé xe</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method="POST" action="/price_convention/update/{{ item.ID }}">
+                                <div class="modal-body">
+                                    <div class="mb-3" style="display: none;">
+                                        <label for="VehicleTypeID{{ item.ID }}" class="form-label">Loại phương tiện</label>
+                                        <input type="number" class="form-control" id="VehicleTypeID{{ item.ID }}" name="VehicleTypeID" value="{{ item.VehicleTypeID }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="Time{{ item.ID }}" class="form-label">Thời điểm</label>
+                                        <input type="text" class="form-control" id="Time{{ item.ID }}" name="Time" value="{{ item.Time }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="Price{{ item.ID }}" class="form-label">Giá vé</label>
+                                        <input type="number" class="form-control" id="Price{{ item.ID }}" name="Price" value="{{ item.Price }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="TicketType{{ item.ID }}" class="form-label">Loại vé</label>
+                                        <input type="text" class="form-control" id="TicketType{{ item.ID }}" name="TicketType" value="{{ item.TicketType }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="StartTime{{ item.ID }}" class="form-label">Thời điểm bắt đầu</label>
+                                        <input type="text" class="form-control" id="StartTime{{ item.ID }}" name="StartTime" value="{{ item.StartTime }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="EndTime{{ item.ID }}" class="form-label">Thời điểm kết thúc</label>
+                                        <input type="text" class="form-control" id="EndTime{{ item.ID }}" name="EndTime" value="{{ item.EndTime }}" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                                    <button type="submit" class="btn btn-primary">Điều chỉnh</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Phân trang -->
+<nav>
+    <ul class="pagination">
+        {% for page in range(1, total_pages + 1) %}
+        <li class="page-item {% if page == current_page %}active{% endif %}">
+            <a class="page-link" href="/price_convention?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy tất cả các nút xóa
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                // Ngăn chặn hành động mặc định
+                event.preventDefault();
+
+                // Hiển thị hộp thoại xác nhận
+                const confirmDelete = confirm('Bạn có chắc chắn muốn xóa không?');
+
+                if (confirmDelete) {
+                    // Nếu người dùng chọn "Có", submit form
+                    this.closest('form').submit();
+                }
+                // Nếu chọn "Không", không làm gì thêm
+            });
+        });
+    });
+</script>
+{% endblock %}

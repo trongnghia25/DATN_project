@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Lịch sử đỗ xe</h1>
+<!-- Danh sách Price Convention (phân trang) -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Loại phương tiện số</th>
+            <th>Tên phương tiện</th>
+            <th>Biển số</th>
+            <th>Thời gian đi vào</th>
+            <th>Thời gian đi ra</th>
+            <th>Trạng thái để xe</th>
+            <th>Tổng số tiền</th>
+            <th>Ghi chú</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in actual_parking_fee %}
+        <tr>
+            <td>{{ item.VehicleTypeID }}</td>
+            <td>{{ item.VehicleTypeName }}</td>
+            <td>{{ item.PlateNumber }}</td>
+            <td>{{ item.EntryTime }}</td>
+            <td>{{ item.ExitTime }}</td>
+            <td>
+                <span class="{% if 'Đang gửi xe' in item.Status %}status-red{% elif 'Đã trả xe' in item.Status %}status-green{% endif %}">
+                    {{ item.Status }}
+                </span>
+            </td>
+            <td>{{ item.TotalFee }}</td>
+            <td>{{ item.Note }}</td>
+            <td>
+                <!-- Delete Button -->
+                <form method="POST" action="/actual_parking_fee/delete/{{ item.ID }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger delete-btn">Xóa</button>
+                </form>
+                <!-- Edit Button -->
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Phân trang -->
+<nav>
+    <ul class="pagination">
+        {% for page in range(1, total_pages + 1) %}
+        <li class="page-item {% if page == current_page %}active{% endif %}">
+            <a class="page-link" href="/actual_parking_fee?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy tất cả các nút xóa
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                // Ngăn chặn hành động mặc định
+                event.preventDefault();
+
+                // Hiển thị hộp thoại xác nhận
+                const confirmDelete = confirm('Bạn có chắc chắn muốn xóa không?');
+
+                if (confirmDelete) {
+                    // Nếu người dùng chọn "Có", submit form
+                    this.closest('form').submit();
+                }
+                // Nếu chọn "Không", không làm gì thêm
+            });
+        });
+    });
+</script>
+
+{% endblock %}

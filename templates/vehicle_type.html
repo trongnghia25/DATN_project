@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Quản lý phương tiện</h1>
+
+<!-- Thêm mới Vehicle_type -->
+<form method="POST" action="/vehicle_type">
+    <div class="mb-3 row">
+        <label for="Name" class="col-sm-12 col-form-label">Loại phương tiện</label>
+        <div class="col-sm-6">
+            <input type="text" class="form-control" id="Name" name="Name" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Tạo mới</button>
+</form>
+
+
+<hr>
+
+<!-- Danh sách Price Convention (phân trang) -->
+<table class="table">
+    <thead>
+        <tr>
+            <th style="display:none;">Phương tiện loại</th>
+            <th>Tên</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in vehicle_type %}
+        <tr>
+            <td style="display:none;">{{ item.ID }}</td>
+            <td>{{ item.Name }}</td>
+            <td>
+                <!-- Delete Button -->
+                <form method="POST" action="/vehicle_type/delete/{{ item.ID }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger delete-btn">Xóa</button>
+                </form>
+                <!-- Edit Button -->
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal{{ item.ID }}">
+                    Điều chỉnh
+                </button>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editModal{{ item.ID }}" tabindex="-1" aria-labelledby="editModalLabel{{ item.ID }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ item.ID }}">Điều chỉnh thông tin phương tiện</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form method="POST" action="/vehicle_type/update/{{ item.ID }}">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="Name{{ item.Name }}" class="form-label">Tên phương tiện</label>
+                                        <input type="text" class="form-control" id="Name{{ item.Name }}" name="Name" value="{{ item.Name }}" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                                    <button type="submit" class="btn btn-primary">Điều chỉnh</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Phân trang -->
+<nav>
+    <ul class="pagination">
+        {% for page in range(1, total_pages + 1) %}
+        <li class="page-item {% if page == current_page %}active{% endif %}">
+            <a class="page-link" href="/vehicle_type?page={{ page }}">{{ page }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy tất cả các nút xóa
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+
+        deleteButtons.forEach(function (button) {
+            button.addEventListener('click', function (event) {
+                // Ngăn chặn hành động mặc định
+                event.preventDefault();
+
+                // Hiển thị hộp thoại xác nhận
+                const confirmDelete = confirm('Bạn có chắc chắn muốn xóa không?');
+
+                if (confirmDelete) {
+                    // Nếu người dùng chọn "Có", submit form
+                    this.closest('form').submit();
+                }
+                // Nếu chọn "Không", không làm gì thêm
+            });
+        });
+    });
+</script>
+{% endblock %}
